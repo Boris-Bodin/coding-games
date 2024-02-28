@@ -29,6 +29,12 @@ enum EntityType {
     }
 }
 
+enum SpellType {
+    WIND,
+    SHIELD,
+    CONTROL
+}
+
 enum OrderType {
     WAIT {
         public String toString(Order order) {
@@ -37,7 +43,8 @@ enum OrderType {
     },
     MOVE {
         public String toString(Order order) {
-            return "MOVE " + order.targetX + " " + order.targetY;
+            final Position target = ((Order.Move) order).target;
+            return "MOVE " + target.x + " " + target.y;
         }
     };
 
@@ -56,21 +63,9 @@ interface IA {
 
 class Player {
 
-    public static Scanner in = new Scanner(System.in);
-
-    public static void main(String[] args) {
-        GameEngine.INSTANCE.run();
-    }
-
-}
-
-class Constant {
-
     public static final int RANGE_MONSTER_FOCUS_BASE = 5000;
 
-    public static final int MAX_X = 17630;
-
-    public static final int MAX_Y = 9000;
+    public static final Position MAX_POSITION = new Position(17630, 9000);
 
     public static final int ATTACK_RANGE_GUARD = 800;
 
@@ -84,32 +79,10 @@ class Constant {
 
     public static final int MANA_COST_ATTACK = 10;
 
-}
+    public static Scanner in = new Scanner(System.in);
 
-class WaitOrder extends Order {
-
-    public static final Order INSTANCE = new WaitOrder();
-
-    public WaitOrder() {
-        type = OrderType.WAIT;
-    }
-
-}
-
-class MoveOrder extends Order {
-
-    public MoveOrder(int targetX, int targetY) {
-        type = OrderType.MOVE;
-        this.targetX = targetX;
-        this.targetY = targetY;
-    }
-
-    public static Order of(int targetX, int targetY) {
-        return new MoveOrder(targetX, targetY);
-    }
-
-    public static Order of(Position target) {
-        return new MoveOrder(target.x, target.y);
+    public static void main(String[] args) {
+        GameEngine.INSTANCE.run();
     }
 
 }
@@ -118,12 +91,91 @@ class Order {
 
     public OrderType type;
 
-    public int targetX;
-
-    public int targetY;
-
     public String toString() {
         return type.toString(this);
+    }
+
+    static class Wait extends Order {
+
+        public static final Order INSTANCE = new Wait();
+
+        public Wait() {
+            type = OrderType.WAIT;
+        }
+
+    }
+
+    static class Move extends Order {
+
+        public Position target;
+
+        public Move(Position target) {
+            type = OrderType.MOVE;
+            this.target = target;
+        }
+
+        public static Order of(Position target) {
+            return new Move(target);
+        }
+
+    }
+
+    static abstract class Spell extends Order {
+
+        public SpellType spell;
+
+        public Spell(SpellType spell) {
+            type = OrderType.MOVE;
+            this.spell = spell;
+        }
+
+        static class Wind extends Spell {
+
+            public Position target;
+
+            public Wind(Position target) {
+                super(SpellType.WIND);
+                this.target = target;
+            }
+
+            public static Order of(Position target) {
+                return new Wind(target);
+            }
+
+        }
+
+        static class Shield extends Spell {
+
+            public int id;
+
+            public Shield(int id) {
+                super(SpellType.SHIELD);
+                this.id = id;
+            }
+
+            public static Order of(int id) {
+                return new Shield(id);
+            }
+
+        }
+
+        static class Control extends Spell {
+
+            public Position target;
+            public int id;
+
+            public Control(int id, Position target) {
+                super(SpellType.CONTROL);
+                this.target = target;
+                this.id = id;
+            }
+
+            public static Order of(int id, Position target) {
+                return new Control(id, target);
+            }
+
+        }
+
     }
 
 }
@@ -137,18 +189,9 @@ class Position {
         this.y = y;
     }
 
-    public void move(double dx, double dy) {
-        this.x += dx;
-        this.y += dy;
-    }
-
     public void move(final Position vector) {
         this.x += vector.x;
         this.y += vector.y;
-    }
-
-    public double distance(final Position other) {
-        return Math.hypot(x - other.x, y - other.y);
     }
 
     public double distance(final int x, final int y) {
@@ -156,8 +199,8 @@ class Position {
     }
 
     @Override
-    public String toString() {
-        return "(" + x + "," + y + ")";
+    public int hashCode() {
+        return x * 31 + y;
     }
 
     @Override
@@ -176,8 +219,8 @@ class Position {
     }
 
     @Override
-    public int hashCode() {
-        return x * 31 + y;
+    public String toString() {
+        return "(" + x + "," + y + ")";
     }
 
     public void moveTo(final Position destination, final int speed) {
@@ -187,8 +230,25 @@ class Position {
         move(dx * speed, dy * speed);
     }
 
+    public double distance(final Position other) {
+        return Math.hypot(x - other.x, y - other.y);
+    }
+
+    public void move(double dx, double dy) {
+        this.x += dx;
+        this.y += dy;
+    }
+
     public Position plus(final Position vector) {
         return new Position(x + vector.x, y + vector.y);
+    }
+
+    public Position minus(final Position position) {
+        return new Position(x - position.x, y - position.y);
+    }
+
+    public Position abs() {
+        return new Position(Math.abs(x), Math.abs(y));
     }
 
     public Position getCopy() {
@@ -205,9 +265,7 @@ class Entity {
 
     public Position position;
 
-    public int standByX;
-
-    public int standByY;
+    public Position standByPosition;
 
     public int shieldLife;
 
@@ -263,20 +321,18 @@ class Entity {
     }
 
     public boolean willBeKilledWithout(final Entity guard, final Base base) {
-        final HashSet<Entity> guards = new HashSet<Entity>(isTargetedBy);
+        final HashSet<Entity> guards = new HashSet<>(isTargetedBy);
         guards.remove(guard);
         return willBeKilledByBefore(guards, base);
     }
 
     private boolean willBeKilledByBefore(final HashSet<Entity> guards, final Base base) {
-        System.err.println("willBeKilledByBefore " + this.id + " " + guards.size());
-
         if (guards.isEmpty()) {
             return false;
         }
 
         Position currentPosition = this.position.getCopy();
-        Position basePosition = new Position(base.x, base.y);
+        Position basePosition = base.position.getCopy();
         int currentLifePoint = health;
 
         HashMap<Entity, Position> guardCoordonner = new HashMap<>();
@@ -287,43 +343,42 @@ class Entity {
         double distanceToBase;
         do {
             distanceToBase = currentPosition.distance(basePosition);
-            if (distanceToBase >= Constant.RANGE_MONSTER_FOCUS_BASE) {
+            if (distanceToBase >= Player.RANGE_MONSTER_FOCUS_BASE) {
                 currentPosition.move(vector);
             } else {
-                currentPosition.moveTo(basePosition, Constant.SPEED_MONSTER);
+                currentPosition.moveTo(basePosition, Player.SPEED_MONSTER);
             }
             distanceToBase = currentPosition.distance(basePosition);
 
             for (Entity guard : guardCoordonner.keySet()) {
 
                 final Position guardPosition = guardCoordonner.get(guard);
-                guardPosition.moveTo(currentPosition, Constant.SPEED_GUARD);
+                guardPosition.moveTo(currentPosition, Player.SPEED_GUARD);
 
                 final double distance = guardPosition.distance(currentPosition);
-                if (distance <= Constant.ATTACK_RANGE_GUARD) {
-                    currentLifePoint -= Constant.ATTACK_DOMMAGE_GUARD;
+                if (distance <= Player.ATTACK_RANGE_GUARD) {
+                    currentLifePoint -= Player.ATTACK_DOMMAGE_GUARD;
                 }
             }
-            System.err.println("distanceToBase " + distanceToBase + "  currentLifePoint " + currentLifePoint);
-        } while (distanceToBase >= Constant.ATTACK_RANGE_MONSTERS && currentLifePoint > 0);
+        } while (distanceToBase >= Player.ATTACK_RANGE_MONSTERS && currentLifePoint > 0);
 
         return currentLifePoint <= 0;
     }
 
-    public int timeForGoTo(final int x, final int y) {
+    public int timeForGoTo(final Position target) {
         Position currentPosition = this.position.getCopy();
 
         double distanceToBase;
         int nbTurn = 0;
-        distanceToBase = currentPosition.distance(x, y);
+        distanceToBase = currentPosition.distance(target);
 
-        while (distanceToBase > Constant.RANGE_MONSTER_FOCUS_BASE) {
+        while (distanceToBase > Player.RANGE_MONSTER_FOCUS_BASE) {
             currentPosition.move(vector);
-            distanceToBase = currentPosition.distance(x, y);
+            distanceToBase = currentPosition.distance(target);
             nbTurn++;
         }
 
-        return (int) Math.floor(nbTurn + (distanceToBase / Constant.SPEED_MONSTER));
+        return (int) Math.floor(nbTurn + (distanceToBase / Player.SPEED_MONSTER));
     }
 
 }
@@ -336,10 +391,9 @@ class AttackerIA extends DefenderIA {
 
     @Override
     public Order makeOrder(final List<Entity> monsters) {
-        if (base.myMana < Constant.MANA_COST_ATTACK) {
-            return super.makeOrder(monsters);
-        }
-
+        //        if (base.myMana < Player.MANA_COST_ATTACK) {
+        //            return super.makeOrder(monsters);
+        //        }
         return super.makeOrder(monsters);
     }
 
@@ -360,38 +414,32 @@ class DefenderIA implements IA {
     public Order makeOrder(final List<Entity> monsters) {
 
         List<Entity> nearestMonster = findOrderedTarget(monsters);
-
-        System.err.println("DefenderIA makeOrder :" + guard.id);
-        System.err.println("Nearest monster size : " + nearestMonster.size());
-
         if (nearestMonster.isEmpty()) {
             guard.mainTarget = null;
-            if (guard.position.x != guard.standByX && guard.position.y != guard.standByY) {
-                return MoveOrder.of(guard.standByX, guard.standByY);
+            if (!guard.position.equals(guard.standByPosition)) {
+                return Order.Move.of(guard.standByPosition);
             }
-            return WaitOrder.INSTANCE;
+            return Order.Wait.INSTANCE;
         }
 
         for (final Entity monster : nearestMonster) {
-            System.err.println("check monster : " + monster.id);
             if (!monster.willBeKilledWithout(guard, base)) {
-                System.err.println("Take monster to target");
                 guard.setTarget(monster);
                 break;
             }
         }
 
         if (guard.mainTarget == null) {
-            return WaitOrder.INSTANCE;
+            return Order.Wait.INSTANCE;
         }
 
-        return MoveOrder.of(guard.mainTarget.nextPosition());
+        return Order.Move.of(guard.mainTarget.nextPosition());
     }
 
     public List<Entity> findOrderedTarget(final List<Entity> monsters) {
         return monsters.stream()
             .filter(m -> m.threatFor == 1)
-            .sorted(Comparator.comparing(monster -> monster.timeForGoTo(base.x, base.y)))
+            .sorted(Comparator.comparing(monster -> monster.timeForGoTo(base.position)))
             .collect(Collectors.toList());
     }
 
@@ -412,7 +460,7 @@ class DefenderIA implements IA {
 
 class Base {
 
-    public int x, y;
+    public Position position;
 
     public int nbGuards;
 
@@ -422,9 +470,8 @@ class Base {
 
     public List<Entity> guards = new ArrayList<>();
 
-    Base(int x, int y, int nbGuards) {
-        this.x = x;
-        this.y = y;
+    Base(Position position, int nbGuards) {
+        this.position = position;
         this.nbGuards = nbGuards;
     }
 
@@ -489,19 +536,14 @@ class EntityFactory {
                     gameEngine.myBase.guards.add(entity);
                     if (gameEngine.myBase.guards.size() == 3) {
                         entity.ia = new AttackerIA(GameEngine.INSTANCE.myBase, entity);
-                        entity.standByX = Math.abs(gameEngine.myBase.x - 4500);
-                        entity.standByY = Math.abs(gameEngine.myBase.y - 4500);
+                        entity.standByPosition = gameEngine.myBase.position.minus(new Position(4500, 4500)).abs();
                     } else {
                         entity.ia = new DefenderIA(GameEngine.INSTANCE.myBase, entity);
-
                         if (gameEngine.myBase.guards.size() == 1) {
-                            entity.standByX = Math.abs(gameEngine.myBase.x - 1000);
-                            entity.standByY = Math.abs(gameEngine.myBase.y - 4500);
+                            entity.standByPosition = gameEngine.myBase.position.minus(new Position(1000, 4500)).abs();
                         }
-
                         if (gameEngine.myBase.guards.size() == 2) {
-                            entity.standByX = Math.abs(gameEngine.myBase.x - 4500);
-                            entity.standByY = Math.abs(gameEngine.myBase.y - 1000);
+                            entity.standByPosition = gameEngine.myBase.position.minus(new Position(4500, 1000)).abs();
                         }
                     }
                     break;
@@ -536,8 +578,8 @@ class GameEngine {
     private void init() {
         running = true;
         entityFactory = new EntityFactory(this);
-        myBase = new Base(Player.in.nextInt(), Player.in.nextInt(), Player.in.nextInt());
-        opBase = new Base(Constant.MAX_X - myBase.x, Constant.MAX_Y - myBase.y, myBase.nbGuards);
+        myBase = new Base(new Position(Player.in.nextInt(), Player.in.nextInt()), Player.in.nextInt());
+        opBase = new Base(Player.MAX_POSITION.minus(myBase.position), myBase.nbGuards);
     }
 
     public void run() {
