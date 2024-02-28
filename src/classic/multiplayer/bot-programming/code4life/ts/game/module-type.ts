@@ -1,0 +1,11 @@
+
+
+export enum ModuleType {
+
+    SAMPLES = 'SAMPLES',
+    DIAGNOSIS = 'DIAGNOSIS',
+    MOLECULES = 'MOLECULES',
+    LABORATORY = 'LABORATORY',
+    START_POS = 'START_POS',
+    EMPTY = 'EMPTY'
+}

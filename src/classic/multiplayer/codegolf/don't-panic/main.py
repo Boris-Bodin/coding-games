@@ -1,0 +1,2 @@
+_,_,_,F,P,_,_,e=map(int,raw_input().split());z=dict(map(int,raw_input().split())for x in range(e))
+while 1:f,p,d=raw_input().split();f=int(f);p=int(p);t=(z.get(f,0),P)[f==F];o=d=='LEFT';print'BLOCK'if(t>p and o)or(t<p and not(o))else'WAIT';

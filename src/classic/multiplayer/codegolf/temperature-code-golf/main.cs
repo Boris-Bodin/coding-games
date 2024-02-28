@@ -1,0 +1,1 @@
+namespace System.Linq{using Collections.Generic;class S{static void Main(){var a=Console.ReadLine()!="0"?Console.ReadLine().Split(' ').Select(int.Parse).ToList():new List<int>(){0};a.Sort((x,y)=>(int)(99*(x*x-y*(y-0.1))));Console.WriteLine(a[0]);}}}

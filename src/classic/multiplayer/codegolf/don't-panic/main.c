@@ -1,0 +1,1 @@
+main(n,a,b,c,d,e,g,h,o,i){scanf("%d%*d%*d%d%d%*d%*d%d",&n,&a,&b,&c);int z[n];z[a]=b;for(i=0;i++<c;)scanf("%d%d",&d,&e),z[d]=e;for(;;){char j[9];scanf("%d%d%s",&g,&h,j);o=j[0]==76;puts(z[g]>h&&o||z[g]<h&&!o?"BLOCK":"WAIT");}}

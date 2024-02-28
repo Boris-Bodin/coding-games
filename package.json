@@ -1,0 +1,18 @@
+{
+  "name": "coding-games-solution",
+  "version": "0.0.0",
+  "scripts": {
+    "contest-legends-of-code-and-magic-marathon": "cd src/classic/multiplayer/contests/legends-of-code-and-magic-marathon && webpack --watch",
+    "contest-fall-challenge-2020": "cd src/classic/multiplayer/contests/fall-challenge-2020 && webpack --watch",
+    "legends-of-code-and-magic": "cd src/classic/multiplayer/bot-programming/legends-of-code-and-magic && webpack --watch",
+    "tic-tac-toe": "cd src/classic/multiplayer/bot-programming/tic-tac-toe && webpack --watch",
+    "code4life": "cd src/classic/multiplayer/bot-programming/code4life && webpack --watch"
+  },
+  "private": true,
+  "devDependencies": {
+    "tslint": "~5.9.1",
+    "typescript": "^2.7.2",
+    "webpack": "^4.16.4",
+    "webpack-cli": "^3.1.0"
+  }
+}

@@ -1,0 +1,1 @@
+main(x,y,X,Y){scanf("%d%d%d%d",&x,&y,&X,&Y);for(;;)printf("%s%s\n",y>Y++?"S":y<--Y?"N":"",x>X++?"E":x<--X?"W":"");}

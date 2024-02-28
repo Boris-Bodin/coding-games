@@ -1,0 +1,2 @@
+#include <iostream>
+main(){int n,a,b,c,d,e,g,h,i,o;std::cin>>n>>c>>c>>a>>b>>c>>c>>c;int z[n];z[a]=b;for(i=0;i<c;i++){std::cin>>d>>e;z[d]=e;}for(;;){char j[11];std::cin>>g>>h>>j;o=j[0]=='L';std::cout<<(z[g]>h&&o||z[g]<h&&!o?"BLOCK\n":"WAIT\n");}}
