@@ -1,3 +1,168 @@
 {
-    "python.linting.pylintEnabled": false
+    "window.zoomLevel": 0,
+
+    //===========================================================================
+    // Ergonomie
+    //===========================================================================
+
+    // Editor
+    "editor.minimap.enabled": false,
+    "editor.formatOnSave": false,
+    "editor.formatOnPaste": false,
+    "editor.renderWhitespace": "trailing",
+    "editor.linkedEditing": true,
+    "editor.occurrencesHighlight": "off",
+    "editor.suggest.insertMode": "replace",
+    "editor.acceptSuggestionOnCommitCharacter": false,
+    "editor.stickyScroll.enabled": true,
+    "files.defaultLanguage": "markdown",
+    "files.exclude": {
+        "**/.git": true,
+        "**/.svn": true,
+        "**/.hg": true,
+        "**/CVS": true,
+        "**/.DS_Store": true,
+        "**/Thumbs.db": true,
+        "**/.idea": true
+    },
+
+    // Explorer
+    "explorer.autoReveal": true,
+    "explorer.confirmDragAndDrop": false,
+    "explorer.confirmDelete": false,
+    "explorer.fileNesting.enabled": true,
+    "explorer.excludeGitIgnore": true,
+    "explorer.fileNesting.patterns": {
+        "*.ts": "${capture}.html,${capture}.sass,${capture}.scss,${capture}.css,${capture}.spec.ts,${capture}.unit.spec.ts,${capture}.it.spec.ts"
+    },
+
+    // Workbench
+    "workbench.startupEditor": "none",
+    "workbench.tree.indent": 20,
+    "workbench.tree.renderIndentGuides": "always",
+    "workbench.editor.enablePreview": false,
+
+    // Emmet
+    "emmet.triggerExpansionOnTab": true,
+
+    // Git
+    "git.confirmSync": false,
+    "git.enableSmartCommit": true,
+    "git.autofetch": true,
+
+    //===========================================================================
+    // Theme
+    //===========================================================================
+
+    "workbench.colorTheme": "Tokyo Night",
+    "editor.fontFamily": "'Jetbrains Mono', 'Droid Sans Mono', 'monospace', monospace",
+    "editor.fontLigatures": true,
+    "editor.lineHeight": 24,
+    "editor.fontSize": 15,
+    "workbench.iconTheme": "material-icon-theme",
+    "workbench.colorCustomizations": {
+        "[Tokyo Night]": {
+            "editor.selectionBackground": "#3D59A1",
+            "editor.selectionHighlightBackground": "#3D59A1"
+        }
+    },
+    "editor.tokenColorCustomizations": {
+        "[Tokyo Night]": {
+            "comments": "#27a338",
+            "textMateRules": [
+                {
+                    "scope": "comment.block.documentation",
+                    "settings": {
+                        "foreground": "#27a338"
+                    }
+                },
+                {
+                    "scope": "comment.block.documentation punctuation.definition.block.tag",
+                    "settings": {
+                        "foreground": "#27a338"
+                    }
+                },
+                {
+                    "scope": "variable.other.jsdoc",
+                    "settings": {
+                        "foreground": "#8600df"
+                    }
+                },
+                {
+                    "scope": "storage.type.class.jsdoc",
+                    "settings": {
+                        "foreground": "#2d65ff"
+                    }
+                }
+            ]
+        }
+    },
+
+    //===========================================================================
+    // Extension
+    //===========================================================================
+
+    "gitlens.currentLine.enabled": false,
+    "gitlens.codeLens.enabled": false,
+    "gitlens.hovers.currentLine.over": "line",
+
+    "vscode-pets.petType": "cat",
+    "vscode-pets.position": "explorer",
+    "vscode-pets.theme": "none",
+    "vscode-pets.petColor": "black",
+    "vscode-pets.petSize": "nano",
+
+    "multiCommand.commands": [
+        {
+            "command": "multiCommand.makeRoom",
+            "sequence": ["workbench.action.toggleSidebarVisibility", "workbench.action.toggleActivityBarVisibility"]
+        }
+    ],
+    "emmet.includeLanguages": {
+        "javascript": "javascriptreact"
+    },
+
+    "formatAll.excludeFolders": [
+        "node_modules",
+        "coverage",
+        "documentation",
+        "out",
+        "dist",
+        ".vscode-test",
+        "media",
+        ".angular"
+    ],
+
+    "formatAll.includeFileExtensions": [".ts", ".json", ".css", ".scss", ".html", ".md"],
+
+    //===========================================================================
+    // Formatteur
+    //===========================================================================
+
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "prettier.bracketSameLine": true,
+    "prettier.jsxSingleQuote": true,
+    "prettier.printWidth": 120,
+    "prettier.proseWrap": "always",
+    "prettier.singleQuote": true,
+    "prettier.tabWidth": 4,
+    "javascript.format.semicolons": "insert",
+    "javascript.preferences.quoteStyle": "single",
+    "javascript.updateImportsOnFileMove.enabled": "always",
+    "typescript.format.semicolons": "insert",
+    "typescript.preferences.quoteStyle": "single",
+    "typescript.updateImportsOnFileMove.enabled": "always",
+
+    //===========================================================================
+    // Language
+    //===========================================================================
+
+    "[typescript]": {
+        "editor.codeActionsOnSave": {
+            "source.organizeImports": "explicit",
+            "source.fixAll": "explicit"
+        }
+    },
+    "diffEditor.ignoreTrimWhitespace": false,
+    "markdown.marp.chromePath": "/usr/bin/google-chrome"
 }
