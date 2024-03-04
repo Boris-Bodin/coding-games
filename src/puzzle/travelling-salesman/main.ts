@@ -16,7 +16,7 @@ declare interface Set<T> extends Iterable<T> {
 }
 
 class Vector {
-    constructor(public readonly id: number, public readonly x: number, public readonly y: number, public visited: boolean = false) {
+    constructor(public readonly id: number, public readonly x: number, public readonly y: number) {
     }
 
     getDistanceTo(destination: Vector) {
@@ -24,16 +24,28 @@ class Vector {
     }
 }
 
-function DFS(vertices: Array<Vector>, vertex: Vector): Array<Vector> {
-    vertex.visited = true;
-    const connexeVertex = [vertex];
-    const sortedVertices = vertices.sort((a, b) => vertex.getDistanceTo(a) - vertex.getDistanceTo(b));
-    for (let neighbour of sortedVertices) {
-        if (!neighbour.visited) {
-            connexeVertex.push(...DFS(vertices, neighbour));
+function DFS(vertices: Array<Vector>, vertex: Vector): {path:Array<Vector>, cost: number} {
+    let minimalCost = 1800*1800*300;
+    let minimalPath = [];
+    if(!vertex){
+        return {path:minimalPath, cost:minimalCost};
+    }
+    if(vertices.length === 0) {
+        return {path:[vertex, ALL_VECTOR[0]], cost: vertex.getDistanceTo(ALL_VECTOR[0])};
+    }
+    const sortedVertices = vertices.slice(0).sort((a, b) => vertex.getDistanceTo(a) - vertex.getDistanceTo(b));
+    for(let i = 0; i < sortedVertices.length && (NB_VECTOR < 10 || i < 1);i++){
+        let {path, cost} = DFS(sortedVertices.slice(0,i).concat(sortedVertices.slice(i+1)), sortedVertices[i]);
+        if(path.length === 0) {
+            continue;
+        }
+        const newCost = cost + vertex.getDistanceTo(path[0]);
+        if(minimalCost > newCost){
+            minimalCost = newCost;
+            minimalPath = [vertex, ...path];
         }
     }
-    return connexeVertex;
+    return {path:minimalPath, cost:minimalCost};
 }
 
 const NB_VECTOR: number = parseInt(readline());
@@ -46,5 +58,5 @@ for (let i = 0; i < NB_VECTOR; i++) {
     ALL_VECTOR.push(vector);
 }
 
-const path = DFS(ALL_VECTOR, ALL_VECTOR[0]);
-console.log(path.map(value => value.id).join(' ') + ' ' + ALL_VECTOR[0].id);
+const {path, cost} = DFS(ALL_VECTOR.slice(1), ALL_VECTOR[0]);
+console.log(path.map(value => value.id).join(' '));
