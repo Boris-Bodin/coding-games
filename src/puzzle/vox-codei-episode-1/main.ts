@@ -179,9 +179,9 @@ function debugGrid(grid: Grid) {
 function main() {
     initGrid();
 
-    let bombesCoordinateN: Coordinate = null;
-    let bombesCoordinateN1: Coordinate = null;
-    let bombesCoordinateN2: Coordinate = null;
+    let bombesCoordinateN: Coordinate | null = null;
+    let bombesCoordinateN1: Coordinate | null = null;
+    let bombesCoordinateN2: Coordinate | null = null;
 
     while (true) {
 
