@@ -40,13 +40,15 @@ class GameState {
     public remainingNodes = 0;
 
     static fromInput() {
+        const [ROUNDS, BOMBS] = readline().split(' ').map(value => parseInt(value, 10));
+
         const grid: Grid = [];
         for (let i = 0; i < GRID_HEIGHT; i++) {
             const line = readline();
             grid[i] = line.split('');
         }
 
-        return new GameState(grid, MAX_BOMBES, MAX_ROUND);
+        return new GameState(grid, BOMBS, ROUNDS);
     }
 
     static copy(state: GameState) {
@@ -292,16 +294,11 @@ function simulate(state: GameState, simulateTurn: number): Array<GameState> {
 }
 
 function main() {
-    const state: GameState = GameState.fromInput();
 
     let currentRounds = 0;
 
     while (true) {
-
-        const [ROUNDS, BOMBS] = readline().split(' ').map(value => parseInt(value, 10));
-
-        state.remainingRound = ROUNDS;
-        state.remainingBombs = BOMBS;
+        const state: GameState = GameState.fromInput();
 
         let nextCommand = WAIT_COMMAND;
 
