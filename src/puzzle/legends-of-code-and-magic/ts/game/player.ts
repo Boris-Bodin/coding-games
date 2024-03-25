@@ -30,7 +30,12 @@ export class Player {
         this.deckSize = parseInt(inputs[2], 10);
         this.rune = parseInt(inputs[3], 10);
         if (isOpponent) {
-            this.handSize = parseInt(readline(), 10);
+            const opponentDetail = readline().split(' ');
+            this.handSize = parseInt(opponentDetail[0], 10);
+            const nbAction = opponentDetail[1] || 0;
+            for (let i = 0; i < nbAction; i++) {
+                readline();
+            }
         }
         this.nextTurnDraw = 1;
     }
@@ -46,6 +51,9 @@ export class Player {
         let card = cards.find(x => x.instanceId === instanceId);
 
         if (card == null) {
+            console.error('Card not found', instanceId, type);
+            console.error('Card not found', inputs);
+
             card = cards.find(x => x.instanceId === -1 ) || CardFactory.create(type);
         }
 

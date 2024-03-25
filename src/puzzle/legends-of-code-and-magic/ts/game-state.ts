@@ -145,9 +145,11 @@ export class GameState {
     public updateCard() {
 
         const cardCount = parseInt(readline(), 10);
+        console.error('Card count : ' + cardCount);
         for (let i = 0; i < cardCount; i++) {
 
             const inputs = readline().split(' ');
+            console.error('Card : ' + inputs);
             const location = parseInt(inputs[2], 10);
             const type = parseInt(inputs[3], 10);
 
