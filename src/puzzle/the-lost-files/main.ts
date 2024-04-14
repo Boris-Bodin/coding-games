@@ -2,56 +2,27 @@ declare function readline(): string;
 
 const GRAPH_SIZE: number = parseInt(readline());
 
-interface Array<T> {
-    flatMap<U>(callback: (value: T, index: number, array: T[]) => U[]): U[];
-
-    find(predicate: (value: T, index: number, obj: T[]) => boolean): T | null;
-
-    includes(searchElement: T, fromIndex?: number): boolean;
-}
-
 class Vertex {
     name: number = -1;
     children: Array<Vertex> = [];
     edges: Array<Edge> = [];
 
     visited: boolean = false;
-    index: number = -1;
-    lowIndex: number = GRAPH_SIZE;
 
     constructor(name: number) {
         this.name = name
     }
 
-    toString() {
-        return this.name + ': ' + this.edges.map((edge: Edge) => '(' + edge.toString() + ')').join(' ')
-            + '\n    ' + this.children.map((vertex: Vertex) => vertex.name).join(' ');
-    }
-
-    hashCode() {
-        return this.name;
-    }
 }
 
 class Edge {
     v1: Vertex;
     v2: Vertex;
-    tilesValidationNumber: number = 0;
 
-    index: number = -1;
-    lowIndex: number = GRAPH_SIZE;
 
     constructor(v1: Vertex, v2: Vertex) {
         this.v1 = v1;
         this.v2 = v2;
-    }
-
-    toString() {
-        return this.v1.name + ' -> ' + this.v2.name + ': ' + this.index + '/' + this.lowIndex;
-    }
-
-    hashCode() {
-        return this.v1.name * GRAPH_SIZE + this.v2.name;
     }
 }
 
@@ -85,9 +56,7 @@ class Graph {
             nbVertices = graph.vertices.length
             Graph.clean(graph);
         } while (nbVertices !== graph.vertices.length);
-
-        // console.error(graph.toString());
-
+        
         return graph;
     }
 
@@ -143,12 +112,6 @@ class Graph {
         return this.vertices.find((vertex: Vertex) => vertex.name === name);
     }
 
-    toString() {
-        return 'Graph:\n  Vertices:\n    ' +
-            this.vertices.map((vertex: Vertex) => vertex.toString()).join('\n    ') + '\n  Edges:\n    ' +
-            this.edges.map((edge: Edge) => edge.toString()).join('\n    ');
-    }
-
 }
 
 class DFSRunner {
@@ -176,107 +139,11 @@ class DFSRunner {
     }
 }
 
-class PolygonFinder {
-
-    private minimalStack: Array<Vertex> = []
-
-    execute(graph: Graph): Array<Array<Vertex>> {
-        const strongConnect: Array<Array<Vertex>> = [];
-        for (let edge of graph.edges) {
-            strongConnect.push(...this.findPolygonsFor(edge, graph, strongConnect));
-        }
-        return strongConnect
-    };
-
-    private findPolygonsFor(edge: Edge, graph: Graph, alreadyFoundPolygon: Array<Array<Vertex>>): Array<Array<Vertex>> {
-        if (edge.tilesValidationNumber >= 2) {
-            return [];
-        }
-
-        graph.edges.forEach((edge: Edge) => {
-            edge.index = -1;
-            edge.lowIndex = GRAPH_SIZE;
-        });
-        graph.vertices.forEach((vertex: Vertex) => {
-            vertex.index = -1;
-            vertex.lowIndex = GRAPH_SIZE;
-        });
-        this.minimalStack = []
-
-        this.BFS(edge.v1, edge, alreadyFoundPolygon);
-
-        const alreadyExist = alreadyFoundPolygon.some(p => this.hashPolygon(p) === this.hashPolygon(this.minimalStack));
-        if (alreadyExist) {
-            return [];
-        }
-        for (let i = 0; i < this.minimalStack.length; i++) {
-            const firstVertex = this.minimalStack[i];
-            const secondVertex = this.minimalStack[i + 1] ?? this.minimalStack[0];
-            const edge = firstVertex.edges.find((edge: Edge) => edge.v1.name === Math.min(firstVertex.name, secondVertex.name) && edge.v2.name === Math.max(firstVertex.name, secondVertex.name));
-            edge.tilesValidationNumber++;
-        }
-
-        // console.error(this.minimalStack.map(value => '(' + value.name + ')').join(','));
-
-        return [this.minimalStack];
-    }
-
-    public hashPolygon(p: Array<Vertex>) {
-        return p.map(v => v.name).sort((a, b) => a - b).join(',');
-    }
-
-    public BFS(vertex: Vertex, edge: Edge, alreadyFoundPolygon: Array<Array<Vertex>>) {
-        const queue: Array<BFSState> = [new BFSState(vertex, edge)];
-        while (queue.length > 0) {
-            const currentState: BFSState = queue.shift();
-            queue.push(...this.BFSProcess(currentState, alreadyFoundPolygon));
-        }
-    }
-
-    private BFSProcess(currentState: BFSState, alreadyFoundPolygon: Array<Array<Vertex>>): Array<BFSState> {
-        let stack = currentState.stack;
-        let edge = currentState.edge;
-        let vertex = currentState.vertex;
-        let currentIndex = currentState.currentIndex;
-
-        if (this.minimalStack.length > 0 && this.minimalStack.length <= stack.length) {
-            return [];
-        }
-
-        const nextVertex: Vertex = edge.v1 === vertex ? edge.v2 : edge.v1;
-        if (edge.index === -1) {
-            edge.index = currentIndex;
-        }
-        if (stack.includes(nextVertex)) {
-            if (nextVertex === stack[0]) {
-                if (this.minimalStack.length === 0 || this.minimalStack.length > stack.length) {
-                    this.minimalStack = [...stack];
-                }
-                edge.lowIndex = Math.min(currentIndex, edge.lowIndex);
-                stack.forEach((value, index) => {
-                    if (value.lowIndex > edge.lowIndex) {
-                        value.index = index;
-                        value.lowIndex = edge.lowIndex;
-                    }
-                });
-            }
-            return [];
-        }
-
-        return nextVertex.edges.filter(e => e !== edge).map(e => new BFSState(nextVertex, e, currentIndex + 1, [...stack, nextVertex]));
-    }
-}
-
-class BFSState {
-    constructor(public vertex: Vertex, public edge: Edge, public currentIndex = 0, public stack: Array<Vertex> = [vertex]) {
-    }
-
-    toString() {
-        return 'v: ' + this.vertex.name + ', e: ' + this.edge.toString() + ', i: ' + this.currentIndex + ', s: [' + this.stack.map(v => v.name).join(', ') + ']';
-    }
-}
 
 const graph: Graph = Graph.init();
 const connectedComponents: Array<Graph> = new DFSRunner().findConnectedComponents(graph);
-const tiles = connectedComponents.flatMap((connectedComponent: Graph) => new PolygonFinder().execute(connectedComponent));
-console.log(connectedComponents.length + ' ' + tiles.length);
+
+const eulerNumber: number = connectedComponents
+    .flatMap((graph: Graph) => graph.edges.length - graph.vertices.length + 1)
+    .reduce((a,b) => a+b,0);
+console.log(connectedComponents.length + ' ' + eulerNumber);
