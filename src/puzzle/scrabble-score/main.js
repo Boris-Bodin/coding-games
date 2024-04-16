@@ -112,10 +112,10 @@ var totalScore = 0;
 newWords.sort(function (a, b) { return wordToString(a).localeCompare(wordToString(b)); }).forEach(function (word) {
     var score = getScoreOf(word, EMPTY_BOARD);
     totalScore += score;
-    console.log(wordToString(word) + " " + score);
+    console.log("".concat(wordToString(word), " ").concat(score));
 });
 if (playedTiles.length === 7) {
     console.log('Bonus 50');
     totalScore += 50;
 }
-console.log("Total " + totalScore);
+console.log("Total ".concat(totalScore));

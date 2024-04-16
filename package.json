@@ -11,7 +11,7 @@
   "private": true,
   "devDependencies": {
     "tslint": "~5.9.1",
-    "typescript": "^2.7.2",
+    "typescript": "^5.4.3",
     "webpack": "^4.16.4",
     "webpack-cli": "^3.1.0"
   }
